@@ -183,17 +183,33 @@
       <br/>
       <div class="two-columns">
         <div class="item"><code>beforeMount()</code></div>
-        <div class="item"></div>
+        <div class="item">Called immediately before the <code>render</code> function is called for the first time.</div>
       </div>
       <br/>
       <div class="two-columns">
         <div class="item"><code>mounted()</code></div>
         <div class="item">At this point, the DOM has loaded and you have access to it - so if you need to get a specific
-          HTML element for any reason,
-          now is the time to do so.
+          HTML element for any reason, now is the time to do so. Note, however, that this does not mean that all <i>child</i> elements have been mounted.
+          In situations where you specifically need to wait for all child components to render, you should use <code>Vue.nextTick()</code>.
         </div>
       </div>
       <br/>
+
+      <div class="two-columns">
+        <div class="item"><code>beforeUpdate()</code></div>
+        <div class="item">Data has changed, but the DOM has not yet been updated. If you need to access the <i>existing</i> DOM before rendering an update (maybe to remove
+          a manually added event listener) you would do it here.
+        </div>
+      </div>
+      <br/>
+      <div class="two-columns">
+        <div class="item"><code>updated()</code></div>
+        <div class="item">Data has changed, and the DOM has already updated. Note - if you need to react to data changes, this is not the place to do it. It's better to use 
+          a <code>computed</code> property or a <code>watcher</code> in those situations.
+        </div>
+      </div>
+      <br/>
+
       <div class="two-columns">
         <div class="item"><code>beforeDestroy()</code></div>
         <div class="item">At this point, Vue will clean up/tear down Watchers, child components, etc. If you have any
@@ -206,7 +222,7 @@
       <br/>
       <div class="two-columns">
         <div class="item"><code>destroyed()</code></div>
-        <div class="item"></div>
+        <div class="item">The component and all child components have been destroyed. </div>
       </div>
     </section-component>
   </div>
