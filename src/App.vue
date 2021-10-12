@@ -15,7 +15,9 @@
           <ol>
             <li>node_modules - The package.json file defines which libraries will be installed into this folder.</li>
             <li>public - Static assets that will not go through webpack (Scripts and Stylesheets won't be minified,
-              missing files cause compilation errors, etc).
+              missing files cause compilation errors, etc). Use this when you have a file you need to reference by name 
+              (files bundled together won't have their original filename), thousands of images you need to reference 
+              dynamically, etc.
             </li>
             <li>assets - icons, images, common/shared styles (such as a <code>stylebase.scss</code>, <code>printStyles.scss</code>
               etc.
@@ -27,7 +29,7 @@
               components are placed
             </li>
             <li>main.ts - instantiates the Vue instance and allows you to create / inject global functionality such as
-              <code>filter</code>s, interfaces, and more.
+              <code>filters</code>, interfaces, and more.
             </li>
             <li>router.ts - defines the router, its routes, and any meta data/restrictions associated with those
               routes.
@@ -103,13 +105,14 @@
     </section-component>
     <section-component>
       <template slot="title">Router</template>
-      <template slot="header">Vue apps are Single-page applications. This means the application is rewritten dynamically
+      <template slot="header">Vue apps are often Single-page applications*. This means the application is rewritten dynamically
         from the client, rather than loading entirely new pages. The Vue router is in charge of determining what to
         render.
       </template>
+      <h6>*Vue apps can be server-side rendered, however most often they are used to bundle an app with webpack, then run the app on the client-side.</h6>
       <h5>Routes are defined in router.ts. Generally, routes point to Vue components defined in the Views folder.</h5>
       <code-snippet :code="routerCode"></code-snippet>
-      <h5>A &lt;router-link&gt; controls which route should show with the <code>to</code> attribute. The &lt;router-view&gt;
+      <h5>A &lt;router-link&gt; controls which route should show with the <code>to</code> attribute, similar to an &lt;a&gt; tag with the <code>href</code> attribute. The &lt;router-view&gt;
         displays the selected route.</h5>
       <code-snippet :code="routerViewCode"></code-snippet>
       <h5>Result</h5>
@@ -154,6 +157,13 @@
         Generally speaking, <code>v-if</code> has higher toggle costs while <code>v-show</code> has higher initial
         render costs. So prefer <code>v-show</code> if you need to toggle something very often, and prefer
         <code>v-if</code> if the condition is unlikely to change at runtime.
+        <br><br>
+        <div>
+          You can also use <code>else</code> clauses with <code>v-if</code> using the following syntax: <br>
+          <code>v-if="condition1"</code>, <code>v-else-if="condition2"</code>, and <code>v-else</code>. There 
+          are no else clause equivalents with <code>v-show</code>, so often <code>v-if</code> gets used because 
+          an else clause is necessary.
+        </div>
       </template>
       <h5>Example Code:</h5>
       <code-snippet :code="conditionalRenderCode"></code-snippet>
@@ -253,7 +263,7 @@ export default class App extends Vue {
   private shortHelloWorld = `<template>\n    <div class='hello'>\n       <h1>{{ msg }}</h1>\n    </div>\n</template>\n\n\nexport default class HelloWorld extends Vue {\n   @Prop()\n   private msg!: string;\n}`;
   private fontSizeCode = `<template>\n  <div>\n    <div :style="{ fontSize: fontSizePx + 'px' }">font size: {{fontSizePx}}px</div>\n    <button @click="increaseFontSize">Increase font size</button>\n    <button @click="fontSizePx = 10">Reset</button>\n  </div>\n</template>\n\n\nexport default class FontSize extends Vue {\n  private fontSizePx = 10;\n\n  private increaseFontSize() {\n    const fontIncrease = Math.floor(this.fontSizePx * 0.1);\n    this.fontSizePx += fontIncrease;\n  }\n}`;
   private reverseTextCode = `<template>\n  <div>\n    <input v-model="message">\n    <p>Message: {{message}}</p>\n    <p>Reverse: {{reverseMessage}}</p>\n  </div>\n</template>\n\nexport default class ReverseText extends Vue {\n  private message: string = '';\n  \n  private get reverseMessage(): string {\n    return this.message.split('').reverse().join('');\n  }\n}`;
-  private watcherCode = `<template>\n  <div>\n    <p>\n      Ask a question:\n      <input v-model="message">\n    </p>\n    <button :disabled="disabled">Submit</button>\n    <div v-show="disabled">Typing...</div>\n  </div>\n</template>\n\nexport default class Watcher extends Vue {\n  private message: string = '';\n  private disabled: boolean = false;\n  private debouncedGetAnswer: any;\n  \n  private created() {\n    this.debouncedGetAnswer = debounce(() => this.disabled = false, 500);\n  }\n  \n  @Watch('message')\n    private onQuestionChange(newValue: string, oldValue: string) {\n    this.disabled = true;\n    this.debouncedGetAnswer();\n  }\n}`;
+  private watcherCode = `<template>\n  <div>\n    <p>\n      Ask a question:\n      <input v-model="message">\n    </p>\n    <button :disabled="disabled">Submit</button>\n    <div v-show="disabled">Typing...</div>\n  </div>\n</template>\n\n\nimport {debounce} from 'lodash';\n\nexport default class Watcher extends Vue {\n  private message: string = '';\n  private disabled: boolean = false;\n  private debouncedGetAnswer: any;\n  \n  private created() {\n    this.debouncedGetAnswer = debounce(() => this.disabled = false, 500);\n  }\n  \n  @Watch('message')\n    private onQuestionChange(newValue: string, oldValue: string) {\n    this.disabled = true;\n    this.debouncedGetAnswer();\n  }\n}`;
   private routerCode = `import Vue from 'vue';\nimport Router from 'vue-router';\nimport Home from './views/Home.vue';\n\nVue.use(Router);\n\nexport default new Router({\n  mode: 'history',\n  base: process.env.BASE_URL,\n  routes: [\n    {\n      path: '/',\n      name: 'home',\n      component: Home,\n    },\n    {\n      path: '/about',\n      name: 'about',\n      component: () => import('./views/About.vue'),\n    },\n  ],\n});`;
   private routerViewCode = `<div id='nav'>\n  <router-link to='/'>Home</router-link>\n  |\n  <router-link to='/about'>About</router-link>\n</div>\n<router-view/>`;
   private listToRender = [{id: 1, name: 'Johnny', grade: 88}, {id: 2, name: 'Billy', grade: 69}, {
